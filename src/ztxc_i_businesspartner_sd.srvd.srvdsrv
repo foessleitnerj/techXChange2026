@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition'
+define service ZTXC_I_BUSINESSPARTNER_SD {
+  expose ztxc_i_businesspartner as BusinessPartner;
+}

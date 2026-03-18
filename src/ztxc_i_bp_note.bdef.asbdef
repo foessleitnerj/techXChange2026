@@ -1,0 +1,30 @@
+managed implementation in class zbp_txc_i_bp_note unique;
+strict ( 2 );
+
+define behavior for ZTXC_I_BP_NOTE alias note
+persistent table ztxc_bp_note
+with additional save
+lock master
+authorization master ( instance )
+etag master ChangedAt
+{
+
+  field ( mandatory : create ) Partner;
+  field ( readonly ) changedAt, ChangedBy, CreatedAt, CreatedBy;
+
+
+  create;
+  update;
+  delete;
+
+  validation validateCustomer on save { create; field Partner; }
+  validation validateNote on save { create; update; field Note; }
+
+  mapping for ztxc_bp_note corresponding
+  {
+     ChangedAt = changed_at;
+     ChangedBy = changed_by;
+     CreatedAt = created_at;
+     CreatedBy = created_by;
+  }
+}
