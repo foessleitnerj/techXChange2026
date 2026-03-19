@@ -1,46 +1,36 @@
 REPORT zy_txc_demo_1.
 
-DATA centraldata  TYPE bapibus1006_central.
-DATA organization TYPE bapibus1006_central_organ.
-DATA partner_id   TYPE bp_partner.
-DATA messages     TYPE TABLE OF bapiret2.
-DATA address      TYPE bapibus1006_address.
 
-TRY.
+DATA l_partner TYPE bp_partner.
 
-    organization-name1 = |CCH – Congress Center Hamburg - { sy-uzeit } |.
-    centraldata-title_key = '0003'. " Company
+START-OF-SELECTION.
 
-    address-postl_cod1 = '20355'.
-    address-city       = 'Hamburg'.
-    address-country    = 'DE'.
-    address-street     = 'Congressplatz'.
-    address-house_no   = '1'.
+  l_partner = '0000000171'.
 
-    CALL FUNCTION 'BAPI_BUPA_CREATE_FROM_DATA'
-      EXPORTING partnercategory         = '2'
-                centraldata             = centraldata
-                centraldataorganization = organization
-                addressdata             = address
-      IMPORTING businesspartner         = partner_id
-      TABLES    return                  = messages.
+  "set update task local.
 
-    LOOP AT messages INTO DATA(message) WHERE type = 'E' OR type = 'A' OR type = 'X'.
-      RAISE EXCEPTION TYPE zcx_txc_error MESSAGE ID message-id
-            TYPE message-type
-            NUMBER message-number
-            WITH message-message_v1
-                 message-message_v2
-                 message-message_v3
-                 message-message_v4.
-    ENDLOOP.
+  "perform vb_commit on commit.
 
-    CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.
+  "insert into zlog values @( value #( timestamp = utclong_current( ) log = 'insert 2 - direct'  ) ).
 
-    WRITE: / 'Partner:', partner_id.
+  "call function 'Z_TXC_UPDATE_TASK_V1' in update task.
 
-  CATCH zcx_txc_error INTO DATA(exception).
+  "call function 'Z_TXC_UPDATE_TASK_V2' in update task.
 
-    WRITE / exception->get_text( ).
+  MODIFY ENTITIES OF ztxc_i_bp_note
+         ENTITY note
+         UPDATE FIELDS ( Note )
+         WITH VALUE #( ( Partner = l_partner
+                         note    = |Notiz Demo 5 - { sy-uzeit }| ) )
+         FAILED DATA(modify_note_failed)
+         REPORTED DATA(modifiy_note_reported).
 
-ENDTRY.
+  COMMIT ENTITIES
+         RESPONSES
+         FAILED DATA(commit_failed)
+         REPORTED DATA(commit_reported).
+
+
+form vb_commit.
+   insert into zlog values @( value #( timestamp = utclong_current( ) log = 'insert 1 - form'  ) ).
+endform.

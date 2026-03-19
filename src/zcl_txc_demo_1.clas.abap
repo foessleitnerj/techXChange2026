@@ -4,8 +4,10 @@ CLASS zcl_txc_demo_1 DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-     interfaces if_oo_adt_classrun.
-     class-data l_difference type p decimals 2.
+    INTERFACES if_oo_adt_classrun.
+
+    CLASS-DATA l_difference TYPE p LENGTH 8 DECIMALS 2.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -44,7 +46,7 @@ CLASS zcl_txc_demo_1 IMPLEMENTATION.
           IMPORTING businesspartner         = partner_id
           TABLES    return                  = messages.
 
-        LOOP AT messages INTO DATA(message) WHERE type = 'E' OR type = 'A' OR type = 'X'.
+        LOOP AT messages INTO DATA(message) WHERE type = 'E' OR type = 'A'.
           RAISE EXCEPTION TYPE zcx_txc_error MESSAGE ID message-id
                 TYPE message-type
                 NUMBER message-number
@@ -55,7 +57,6 @@ CLASS zcl_txc_demo_1 IMPLEMENTATION.
         ENDLOOP.
 
         CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.
-
 
         GET RUN TIME FIELD DATA(l_to).
         l_difference = ( l_to - l_from ) / 1000000.
